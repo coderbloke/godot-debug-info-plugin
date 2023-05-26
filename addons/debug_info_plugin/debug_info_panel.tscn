@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://addons/debug_info_plugin/DebugInfoPanel.gd" id="1_s1nmm"]
+[ext_resource type="PackedScene" path="res://addons/debug_info_plugin/debug_info_panel_slot.tscn" id="2_hqk8m"]
+
+[node name="DebugInfoPanel" type="VBoxContainer"]
+offset_right = 200.0
+offset_bottom = 300.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_s1nmm")
+
+[node name="SlotContainer" type="ScrollContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SlotList" type="VBoxContainer" parent="SlotContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+
+[node name="TemplateSlot" parent="SlotContainer/SlotList" instance=ExtResource("2_hqk8m")]
+visible = false
+layout_mode = 2
+
+[node name="TemplateSeparator" type="HSeparator" parent="SlotContainer/SlotList"]
+visible = false
+layout_mode = 2
