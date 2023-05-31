@@ -5,7 +5,7 @@ const AUTOLOAD_NAME = "DebugInfo"
 
 var singleton: DebugInfoManager
 var info_panel: DebugInfoPanel = preload("debug_info_panel.tscn").instantiate()
-var debugger_plugin = ExampleEditorDebugger.new()
+var debugger_plugin = DebugInfoDebuggerPlugin.new()
 
 func init_singleton():
 	singleton = get_node_or_null("/root/" + AUTOLOAD_NAME)

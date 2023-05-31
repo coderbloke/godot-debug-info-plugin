@@ -27,7 +27,7 @@ signal selection_changed(key: String)
 @onready var timer_progress_disk := $TimerProgressDisk
 @onready var info_label = $InfoLabel
 
-var start_tick_ms: int = -1 
+var last_update_tick_ms: int = -1 
 
 func _init():
 	pass
@@ -56,11 +56,11 @@ func _process(delta):
 	update_timer_progress_disk()
 	
 func reset_timer():
-	start_tick_ms = Time.get_ticks_msec()
+	last_update_tick_ms = Time.get_ticks_msec()
 	update_timer_progress_disk()
 	
 func get_age():
-	return (Time.get_ticks_msec() - start_tick_ms) / 1000.0 if start_tick_ms >= 0 else 0
+	return (Time.get_ticks_msec() - last_update_tick_ms) / 1000.0 if last_update_tick_ms >= 0 else 0
 
 func is_timed_out():
 	return get_age() >= timeout if timeout > 0 else false

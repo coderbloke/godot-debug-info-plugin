@@ -1,5 +1,5 @@
 @tool
-class_name ExampleEditorDebugger extends EditorDebuggerPlugin
+class_name DebugInfoDebuggerPlugin extends EditorDebuggerPlugin
 
 var info_panel: DebugInfoPanel
 
