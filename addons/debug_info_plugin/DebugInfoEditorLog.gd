@@ -33,12 +33,15 @@ var theme_cache := _ThemeCache.new()
 
 class LogFilter:
 
-	var message_count: int = 0
+	var message_count: int = 0:
+		set(value):
+			message_count = value
+			_update_toggle_button()
 
 	var active: bool = true:
 		set(value):
 			active = value
-			toggle_button.set_pressed_no_signal(active)
+			_update_toggle_button()
 
 	var type: MessageType
 
@@ -192,12 +195,12 @@ func _save_state():
 	# Load and amend existing config if it exists.
 	config.load(editor_path.get_project_settings_dir().path_join("editor_layout.cfg"))
 
-	const section := "editor_log"
+	const section := "debug_info_editor_log"
 	for key in type_filter_map:
-		config.set_value(section, "log_filter_" + str(key), type_filter_map[key].is_active())
+		config.set_value(section, "log_filter_" + str(key), type_filter_map[key].active)
 
 	config.set_value(section, "collapse", collapse)
-	config.set_value(section, "show_search", search_box.is_visible())
+	config.set_value(section, "show_search", search_box.visible)
 
 	config.save(editor_path.get_project_settings_dir().path_join("editor_layout.cfg"))
 
@@ -258,7 +261,7 @@ func _process_message(msg: String, type: MessageType):
 	else:
 		# Different message to the previous one received.
 		var message := LogMessage.new(msg, type)
-		_add_log_line(message, type)
+		_add_log_line(message)
 		messages.push_back(message)
 
 	type_filter_map[type].message_count += 1
@@ -352,7 +355,7 @@ func _add_log_line(message: LogMessage, replace_previous: bool = false):
 	
 
 func _set_filter_active(active: bool, type: MessageType):
-	type_filter_map[type].set_active(active)
+	type_filter_map[type].active = active
 	_start_state_save_timer()
 	_rebuild_log()
 
