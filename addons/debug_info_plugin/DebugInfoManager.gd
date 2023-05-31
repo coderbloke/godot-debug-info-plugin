@@ -6,6 +6,8 @@ var info_panel: DebugInfoPanel
 var send_debugger_messages := true
 var slots = { }
 
+var editor_log: DebugInfoEditorLog
+
 func get_slot(key: String, clear := true, timeout := -1) -> DebugInfoSlot:
 	var slot: DebugInfoSlot
 	if slots.has(key):
