@@ -93,6 +93,7 @@ layout_mode = 2
 tooltip_text = "Focus Search/Filter Bar"
 focus_mode = 0
 toggle_mode = true
+button_pressed = true
 icon = SubResource("ImageTexture_6xvqt")
 flat = true
 
