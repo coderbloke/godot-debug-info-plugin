@@ -2,11 +2,12 @@
 class_name DebugInfoManager extends Node
 
 var info_panel: DebugInfoPanel
+var log_panel: DebugInfoEditorLogPanel
 
-var send_debugger_messages := true
 var slots = { }
+var logs = { }
 
-var editor_log: DebugInfoEditorLog
+var log: DebugInfoEditorLog
 
 func get_slot(key: String, clear := true, timeout := -1) -> DebugInfoSlot:
 	var slot: DebugInfoSlot
@@ -21,6 +22,18 @@ func get_slot(key: String, clear := true, timeout := -1) -> DebugInfoSlot:
 	if timeout >= 0:
 		slot.set_timeout(timeout)
 	return slot
+	
+func get_log(key: String, title: String = "") -> DebugInfoLog:
+	var log: DebugInfoLog
+	if logs.has(key):
+		log = logs[key]
+	else:
+		log = DebugInfoLog.new(self)
+		log.key = key
+		logs[key] = log
+	if title.length() > 0:
+		log.set_title(title)
+	return log
 	
 func send_debugger_message(message: String, data: Array):
 	if OS.is_debug_build() and not Engine.is_editor_hint():

@@ -12,8 +12,6 @@ class_name DebugInfoPanel extends VBoxContainer
 
 var slots: Dictionary = { }
 
-var selected_slot_key: String
-
 func get_slot(key: String) -> DebugInfoPanelSlot:
 	var slot: DebugInfoPanelSlot
 	if slots.has(key):

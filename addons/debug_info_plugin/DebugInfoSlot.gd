@@ -1,5 +1,5 @@
 @tool
-class_name DebugInfoSlot extends Node
+class_name DebugInfoSlot extends Object
 
 var parent: DebugInfoManager
 var key: String

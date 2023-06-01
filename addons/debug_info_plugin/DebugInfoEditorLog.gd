@@ -95,6 +95,13 @@ var tool_button: Button # TODO: intro state for tool_button, make _update_functi
 @onready var timestamp_filter_button := %TimestampFilterButton as Button
 var timestamp_visible := true
 
+# Not used yet here, but used by DebugInfoLogPanel 
+@export var title: String:
+	set(new_value):
+		title = new_value
+		title_changed.emit(self)
+
+signal title_changed(log: DebugInfoEditorLog)
 
 func _ready():
 	save_state_timer.timeout.connect(_save_state)
@@ -113,7 +120,6 @@ func _ready():
 	type_filter_map[MessageType.EDITOR] = LogFilter.new(MessageType.EDITOR, %EditorFilterButton)
 	for filter in type_filter_map.values():
 		filter.toggled.connect(_set_filter_active)
-		
 
 
 func _update_theme():
@@ -427,14 +433,3 @@ func _reset_message_counts():
 	for key in type_filter_map:
 		type_filter_map[key].message_count = 0
 
-func print(msg):
-	add_message(str(msg), MessageType.STD)
-
-func print_rich(msg):
-	add_message(str(msg), MessageType.STD_RICH)
-
-func printerr(msg):
-	add_message(str(msg), MessageType.ERROR)
-
-func print_warning(msg):
-	add_message(str(msg), MessageType.ERROR)
