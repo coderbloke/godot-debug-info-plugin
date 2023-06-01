@@ -1,6 +1,13 @@
 @tool
 class_name DebugInfoDebuggerPlugin extends EditorDebuggerPlugin
 
+const MESSAGE_PREFIX := "DebugInfo"
+
+class Messages:
+	const CLEAR_SLOT := "clear_slot"
+	const SET_SLOT_TIMEOUT := "set_slot_timeout"
+	const ADD_SLOT_LINE := "add_slot_line"
+
 var info_panel: DebugInfoPanel
 
 func _has_capture(prefix):
@@ -12,13 +19,13 @@ func _capture(message, data, session_id):
 	var key = "[" + str(session_id) + "] " + data[0]
 	var processed := true
 	match message:
-		"DebugInfo:clear":
+		MESSAGE_PREFIX + ":" + Messages.CLEAR_SLOT:
 			var panel_slot = info_panel.get_slot(key)
 			if panel_slot != null: panel_slot.clear()
-		"DebugInfo:set_timeout":
+		MESSAGE_PREFIX + ":" + Messages.SET_SLOT_TIMEOUT:
 			var panel_slot = info_panel.get_slot(key)
 			if panel_slot != null: panel_slot.timeout = data[1]
-		"DebugInfo:add_line":
+		MESSAGE_PREFIX + ":" + Messages.ADD_SLOT_LINE:
 			var panel_slot = info_panel.get_slot(key)
 			if panel_slot != null: panel_slot.add_line(data[1])
 		_:
