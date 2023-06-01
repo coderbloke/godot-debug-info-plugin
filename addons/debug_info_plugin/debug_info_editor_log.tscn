@@ -63,8 +63,9 @@ size_flags_horizontal = 4
 [node name="TimestampFilterButton" type="Button" parent="HB/VBRight/HBTools3"]
 unique_name_in_owner = true
 layout_mode = 2
-tooltip_text = "Clear Output"
+tooltip_text = "Show timestamps"
 focus_mode = 0
+toggle_mode = true
 icon = ExtResource("2_12mvo")
 flat = true
 
@@ -109,7 +110,6 @@ layout_mode = 2
 tooltip_text = "Collapse duplicate messages into one log entry. Shows number of occurrences."
 focus_mode = 0
 toggle_mode = true
-button_pressed = true
 icon = SubResource("ImageTexture_jfaa4")
 flat = true
 
