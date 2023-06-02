@@ -95,6 +95,17 @@ var tool_button: Button # TODO: intro state for tool_button, make _update_functi
 @onready var timestamp_filter_button := %TimestampFilterButton as Button
 var timestamp_visible := true
 
+@onready var externalize_button := %ExternalizeButton as Button
+var externalize_icon := preload("ExternalView.svg")
+var dock_icon := preload("DockedView.svg")
+var external: bool = false:
+	set(new_value):
+		if new_value != external:
+			external = new_value
+			externalize_button.icon = dock_icon if external else externalize_icon
+
+signal external_change_requested(log: DebugInfoEditorLog, external: bool)
+
 signal updated(log: DebugInfoEditorLog)
 
 # Not used yet here, but used by DebugInfoLogPanel 
@@ -115,6 +126,7 @@ func _ready():
 	collapse_button.toggled.connect(_set_collapse)
 	show_search_button.toggled.connect(_set_search_visible)
 	timestamp_filter_button.toggled.connect(_set_timestamp_visible)
+	externalize_button.pressed.connect(_request_external_change)
 	
 	type_filter_map[MessageType.STD] = LogFilter.new(MessageType.STD, %StdFilterButton)
 	type_filter_map[MessageType.ERROR] = LogFilter.new(MessageType.ERROR, %ErrorFilterButton)
@@ -205,7 +217,9 @@ func _set_timestamp_visible(visible: bool):
 	self.timestamp_visible = visible
 	_start_state_save_timer()
 	_rebuild_log()
-	
+
+func _request_external_change():
+	external_change_requested.emit(self, !external)
 
 func _start_state_save_timer():
 	if not is_loading_state:
