@@ -95,6 +95,8 @@ var tool_button: Button # TODO: intro state for tool_button, make _update_functi
 @onready var timestamp_filter_button := %TimestampFilterButton as Button
 var timestamp_visible := true
 
+signal updated(log: DebugInfoEditorLog)
+
 # Not used yet here, but used by DebugInfoLogPanel 
 @export var title: String:
 	set(new_value):
@@ -260,7 +262,7 @@ func _clear_request():
 	_reset_message_counts()
 	if tool_button != null:
 		tool_button.icon = Texture2D.new()
-
+	updated.emit(self)
 
 func _copy_request():
 	var text := log.get_selected_text()
@@ -300,7 +302,7 @@ func _process_message(msg: String, timestamp: int, type: MessageType):
 		messages.push_back(message)
 
 	type_filter_map[type].message_count += 1
-	
+	updated.emit(self)
 
 func add_message(msg: String, type: MessageType):
 	var timestamp := Time.get_unix_time_from_system()
@@ -327,6 +329,7 @@ func _rebuild_log():
 						and msg.timestamp_positions[timestamp_index + 1] == i:
 							timestamp_index += 1
 				_add_log_line(msg, false, timestamp_index if msg.timestamp_positions[timestamp_index] == i else -1)
+	updated.emit(self)
 
 
 func _add_log_line(message: LogMessage, replace_previous: bool = false, timestamp_index: int = -1):

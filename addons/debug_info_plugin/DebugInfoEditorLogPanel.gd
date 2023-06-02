@@ -18,30 +18,36 @@ var tabbed_logs_in_order: Array[DebugInfoEditorLog] = []
 
 var selected_tabbed_log_index := 0:
 	set(new_value):
-		print("[selected_tabbed_log_index.set]")
 		if new_value != selected_tabbed_log_index:
 			selected_tabbed_log_index = clampi(new_value, 0, tabbed_logs_in_order.size())
 			_update_children_visibility()
-		if tab_bar.current_tab != selected_tabbed_log_index:
-			tab_bar.current_tab = selected_tabbed_log_index
 
 func _ready():
 	logs["default"] = default_log
 	tabbed_logs_in_order = [default_log]
-	tab_bar.tab_changed.connect(_on_tab_changed)
+	tab_bar.tab_selected.connect(_on_tab_selected)
 	tab_bar.tab_close_pressed.connect(_on_tab_close_pressed)
 	tab_bar.active_tab_rearranged.connect(_on_active_tab_rearranged)
+	default_log.updated.connect(_ensure_log_is_visible)
 
 func get_default_log():
 	return default_log
 	
+func _add_log_to_tabs(log: DebugInfoEditorLog):
+	tab_bar.add_tab(log.title)
+	tabbed_logs_in_order.append(log)
+	
+func _ensure_log_is_visible(log: DebugInfoEditorLog):
+	if logs.values().find(log) < 0 and not log.visible:
+		_add_log_to_tabs(log)
+		_update_children_visibility()
+
 func get_log(key: String) -> DebugInfoEditorLog:
 	var log: DebugInfoEditorLog
 	if logs.has(key):
 		log = logs[key]
-		if log == default_log and not default_log.visible:
-			tabbed_logs_in_order.append(log)
-			_update_children_visibility()
+		if log == default_log:
+			_ensure_log_is_visible(default_log)
 	else:
 		log = _create_log()
 		log.title = key
@@ -53,8 +59,7 @@ func _create_log() -> DebugInfoEditorLog:
 	log.visible = false
 	log_container.add_child(log)
 	log.title_changed.connect(_on_log_title_changed)
-	tab_bar.add_tab(log.title)
-	tabbed_logs_in_order.append(log)
+	_add_log_to_tabs(log)
 	_update_children_visibility()
 	return log
 
@@ -69,7 +74,8 @@ func _update_children_visibility():
 		var log_visible := (i == selected_tabbed_log_index)
 		if tabbed_logs_in_order[i].visible != log_visible:
 			tabbed_logs_in_order[i].visible = log_visible
-	tab_bar.current_tab = selected_tabbed_log_index
+	if tab_bar.tab_count > 0 and tab_bar.current_tab != selected_tabbed_log_index:
+		tab_bar.current_tab = selected_tabbed_log_index
 
 func _update_tab_titles():
 	for i in tabbed_logs_in_order.size():
@@ -81,7 +87,7 @@ func _on_log_title_changed(log: DebugInfoEditorLog):
 	if tab_index >= 0:
 		tab_bar.set_tab_title(tab_index, log.title)
 
-func _on_tab_changed(tab: int):
+func _on_tab_selected(tab: int):
 	selected_tabbed_log_index = tab
 
 func _on_tab_close_pressed(tab: int):
@@ -95,6 +101,14 @@ func _on_tab_close_pressed(tab: int):
 	else:
 		log_container.remove_child(closed_log)
 		closed_log.queue_free()
+	var tabbed_log_index_to_select: int 
+	if tab < selected_tabbed_log_index:
+		tabbed_log_index_to_select = selected_tabbed_log_index - 1
+	else:
+		tabbed_log_index_to_select = selected_tabbed_log_index 
+	if tabbed_log_index_to_select >= tab_bar.tab_count:
+		tabbed_log_index_to_select = tab_bar.tab_count - 1
+	selected_tabbed_log_index = tabbed_log_index_to_select
 	_update_children_visibility()
 
 func _on_active_tab_rearranged(idx_to: int):
