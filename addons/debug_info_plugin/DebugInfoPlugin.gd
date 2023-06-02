@@ -36,7 +36,12 @@ func _exit_tree():
 	if singleton != null:
 		singleton.info_panel = null
 		singleton.log = null
+		
 	remove_control_from_docks(info_panel)
+	info_panel.queue_free()
+	
 	remove_debugger_plugin(debugger_plugin)
+
 	remove_control_from_bottom_panel(log_panel)
+	log_panel.queue_free()
 
