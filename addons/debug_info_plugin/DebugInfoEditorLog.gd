@@ -82,18 +82,36 @@ var track_all_timestamps := false # If true, all timestamp will be stored for re
 @onready var copy_button := %CopyButton as Button
 	
 @onready var collapse_button := %CollapseButton as Button
-var collapse := false
+var collapse: bool = false:
+	set(new_value):
+		collapse = new_value
+		if is_instance_valid(collapse_button):
+			collapse_button.set_pressed_no_signal(collapse)
+
 		
 var tool_button: Button # TODO: intro state for tool_button, make _update_function, call it from setter also
 	
 @onready var show_search_button := %ShowSearchButton as Button
+var search_box_visible: bool = true:
+	set(new_value):
+		search_box_visible = new_value
+		if is_instance_valid(search_box):
+			search_box.visible = search_box_visible
+		if is_instance_valid(show_search_button):
+			show_search_button.set_pressed_no_signal(search_box_visible)
+			
 @onready var search_box := %SearchBox as LineEdit
 
 @onready var is_loading_state := false
 @onready var save_state_timer := %SaveStateTimer as Timer
 
 @onready var timestamp_filter_button := %TimestampFilterButton as Button
-var timestamp_visible := true
+var timestamp_visible := true:
+	set(new_value):
+		timestamp_visible = new_value
+		if is_instance_valid(timestamp_filter_button):
+			timestamp_filter_button.set_pressed_no_signal(timestamp_visible)
+
 
 @onready var externalize_button := %ExternalizeButton as Button
 var externalize_icon := preload("ExternalView.svg")
@@ -248,7 +266,7 @@ func _save_state():
 		config.set_value(section, "log_filter_" + str(key), type_filter_map[key].active)
 
 	config.set_value(section, "collapse", collapse)
-	config.set_value(section, "show_search", search_box.visible)
+	config.set_value(section, "show_search", search_box_visible)
 	config.set_value(section, "show_timestamp", timestamp_visible)
 	config.set_value(section, "track_all_timestamps", track_all_timestamps)
 
@@ -271,12 +289,8 @@ func _load_state():
 		type_filter_map[key].active = config.get_value(section, "log_filter_" + str(key), true) as bool
 
 	collapse = config.get_value(section, "collapse", false)
-	collapse_button.button_pressed = collapse
-	var show_search := config.get_value(section, "show_search", true) as bool
-	search_box.visible = show_search
-	show_search_button.button_pressed = show_search
+	search_box_visible = config.get_value(section, "show_search", true)
 	timestamp_visible = config.get_value(section, "show_timestamp", true)
-	timestamp_filter_button.button_pressed = timestamp_visible
 	track_all_timestamps = config.get_value(section, "track_all_timestamps", false)
 
 	is_loading_state = false
@@ -448,7 +462,7 @@ func _set_filter_active(active: bool, type: MessageType):
 
 
 func _set_search_visible(visible):
-	search_box.visible = visible
+	search_box_visible = visible
 	if visible:
 		search_box.grab_focus()
 	_start_state_save_timer()

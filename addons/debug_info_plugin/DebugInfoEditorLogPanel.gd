@@ -46,13 +46,14 @@ func get_default_log(ensure_is_on_gui: bool = false):
 	return default_log
 	
 func _add_log_to_tabs(log: DebugInfoEditorLog):
-	log_container.add_child(log)
-	tab_bar.add_tab(log.title)
-	tabbed_logs_in_order.append(log)
-	log.title_changed.connect(_on_log_title_changed)
-	log.updated.connect(_ensure_log_is_on_gui)
-	_update_children_visibility()
-	tabs_changed.emit(self)
+	if log_container != null and tab_bar != null:
+		tabbed_logs_in_order.append(log)
+		log.title_changed.connect(_on_log_title_changed)
+		log.updated.connect(_ensure_log_is_on_gui)
+		log_container.add_child(log)
+		tab_bar.add_tab(log.title)
+		_update_children_visibility()
+		tabs_changed.emit(self)
 	
 func _ensure_log_is_on_gui(log: DebugInfoEditorLog):
 	if tabbed_logs_in_order.find(log) < 0:
