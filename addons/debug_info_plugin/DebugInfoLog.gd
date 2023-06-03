@@ -13,7 +13,12 @@ func clear():
 		if log != null: log.clear()
 	parent.send_debugger_message(DebugInfoDebuggerPlugin.Messages.CLEAR_LOG, [key])
 
+var collected_raw_msg := ""
+
 func add_message(msg: String, type: DebugInfoEditorLog.MessageType):
+	if collected_raw_msg.length() > 0:
+		msg = collected_raw_msg + msg
+		collected_raw_msg = ""
 	if parent.log_panel != null:
 		var log := parent.log_panel.get_log(key)
 		if log != null: log.add_message(msg, type)
@@ -30,10 +35,18 @@ func print(msg):
 
 func print_rich(msg):
 	add_message(str(msg), DebugInfoEditorLog.MessageType.STD_RICH)
+	
+func print_verbose(msg):
+	add_message(str(msg), DebugInfoEditorLog.MessageType.VERBOSE)
 
 func printerr(msg):
 	add_message(str(msg), DebugInfoEditorLog.MessageType.ERROR)
 
+func printraw(msg):
+	collected_raw_msg += msg
+
+func print_error(msg):
+	add_message(str(msg), DebugInfoEditorLog.MessageType.ERROR)
+
 func print_warning(msg):
 	add_message(str(msg), DebugInfoEditorLog.MessageType.WARNING)
-

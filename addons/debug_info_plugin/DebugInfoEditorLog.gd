@@ -6,7 +6,7 @@ enum MessageType {
 	ERROR,
 	STD_RICH,
 	WARNING,
-	EDITOR,
+	VERBOSE,
 }
 
 class LogMessage:
@@ -30,7 +30,7 @@ class _ThemeCache:
 	var warning_color: Color
 	var warning_icon: Texture2D
 
-	var message_color: Color
+	var verbose_color: Color
 	
 var theme_cache := _ThemeCache.new()
 
@@ -155,7 +155,7 @@ func _ready():
 	type_filter_map[MessageType.STD] = LogFilter.new(MessageType.STD, %StdFilterButton)
 	type_filter_map[MessageType.ERROR] = LogFilter.new(MessageType.ERROR, %ErrorFilterButton)
 	type_filter_map[MessageType.WARNING] = LogFilter.new(MessageType.WARNING, %WarningFilterButton)
-	type_filter_map[MessageType.EDITOR] = LogFilter.new(MessageType.EDITOR, %EditorFilterButton)
+	type_filter_map[MessageType.VERBOSE] = LogFilter.new(MessageType.VERBOSE, %VerboseFilterButton)
 	for filter in type_filter_map.values():
 		filter.toggled.connect(_set_filter_active)
 
@@ -198,12 +198,12 @@ func _update_theme():
 		type_filter_map[MessageType.STD].toggle_button.icon = get_theme_icon("Popup", "EditorIcons")
 		type_filter_map[MessageType.ERROR].toggle_button.icon = get_theme_icon("StatusError", "EditorIcons")
 		type_filter_map[MessageType.WARNING].toggle_button.icon = get_theme_icon("StatusWarning", "EditorIcons")
-		type_filter_map[MessageType.EDITOR].toggle_button.icon = get_theme_icon("Edit", "EditorIcons")
+		type_filter_map[MessageType.VERBOSE].toggle_button.icon = get_theme_icon("Edit", "EditorIcons")
 
 		type_filter_map[MessageType.STD].toggle_button.theme_type_variation = "EditorLogFilterButton"
 		type_filter_map[MessageType.ERROR].toggle_button.theme_type_variation = "EditorLogFilterButton"
 		type_filter_map[MessageType.WARNING].toggle_button.theme_type_variation = "EditorLogFilterButton"
-		type_filter_map[MessageType.EDITOR].toggle_button.theme_type_variation = "EditorLogFilterButton"
+		type_filter_map[MessageType.VERBOSE].toggle_button.theme_type_variation = "EditorLogFilterButton"
 
 		clear_button.icon = get_theme_icon("Clear", "EditorIcons")
 		copy_button.icon = get_theme_icon("ActionCopy", "EditorIcons")
@@ -215,7 +215,7 @@ func _update_theme():
 	theme_cache.error_icon = get_theme_icon("Error", "EditorIcons")
 	theme_cache.warning_color = get_theme_color("warning_color", "Editor")
 	theme_cache.warning_icon = get_theme_icon("Warning", "EditorIcons")
-	theme_cache.message_color = get_theme_color("font_color", "Editor") * Color(1, 1, 1, 0.6)
+	theme_cache.verbose_color = get_theme_color("font_color", "Editor") * Color(1, 1, 1, 0.6)
 
 
 func _notification(what: int):
@@ -404,7 +404,7 @@ func _add_log_line(message: LogMessage, replace_previous: bool = false, timestam
 			log.push_color(theme_cache.error_color)
 		MessageType.WARNING:
 			log.push_color(theme_cache.warning_color)
-		MessageType.EDITOR:
+		MessageType.VERBOSE:
 			pass
 
 	if timestamp_visible:
@@ -432,9 +432,9 @@ func _add_log_line(message: LogMessage, replace_previous: bool = false, timestam
 			log.add_text(" ")
 			if tool_button != null:
 				tool_button.set_icon(icon)
-		MessageType.EDITOR:
+		MessageType.VERBOSE:
 			# Distinguish editor messages from messages printed by the project
-			log.push_color(theme_cache.message_color)
+			log.push_color(theme_cache.verbose_color)
 
 	# If collapsing, add the count of this message in bold at the start of the line.
 	if collapse and message.count > 1:
