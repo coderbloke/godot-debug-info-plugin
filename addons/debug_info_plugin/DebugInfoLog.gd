@@ -50,3 +50,9 @@ func print_error(msg):
 
 func print_warning(msg):
 	add_message(str(msg), DebugInfoEditorLog.MessageType.WARNING)
+
+func print_call_stack():
+	var call_stack = get_stack()
+	print_verbose("call_stack = " + str(call_stack))
+	for i in call_stack.size():
+		print(call_stack[i])

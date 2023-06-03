@@ -11,11 +11,10 @@ var log_panel = preload("debug_info_editor_log_panel.tscn").instantiate()
 var debugger_plugin = DebugInfoDebuggerPlugin.new()
 
 func init_singleton():
-	singleton = get_node_or_null("/root/" + AUTOLOAD_NAME)
+	singleton = get_node_or_null("/root/" + AUTOLOAD_NAME) as DebugInfoManager
 	if singleton != null:
 		singleton.info_panel = info_panel
 		singleton.log_panel = log_panel
-		singleton.log = log_panel.get_default_log(true)
 
 func _enter_tree():
 	add_autoload_singleton(AUTOLOAD_NAME, self.get_script().get_path().get_base_dir() + "/DebugInfoManager.gd")
@@ -24,6 +23,7 @@ func _enter_tree():
 	add_control_to_dock(DOCK_SLOT_LEFT_BR, info_panel)
 	add_debugger_plugin(debugger_plugin)
 	debugger_plugin.info_panel = info_panel
+	log_panel.get_default_log(true)
 	debugger_plugin.log_panel = log_panel
 	
 	add_control_to_bottom_panel(log_panel, "DebugInfoLog")

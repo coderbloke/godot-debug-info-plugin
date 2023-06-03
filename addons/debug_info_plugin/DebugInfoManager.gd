@@ -7,7 +7,13 @@ var log_panel: DebugInfoEditorLogPanel
 var slots = { }
 var logs = { }
 
-var log: DebugInfoEditorLog
+const DEFAULT_LOG_KEY = "default"
+
+var log: DebugInfoLog:
+	get:
+		if log == null:
+			log = get_log(DEFAULT_LOG_KEY)
+		return log
 
 func get_slot(key: String, clear := true, timeout := -1) -> DebugInfoSlot:
 	var slot: DebugInfoSlot

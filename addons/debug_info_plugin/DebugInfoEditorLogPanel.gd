@@ -25,6 +25,7 @@ var selected_tabbed_log_index := 0:
 		if new_value != selected_tabbed_log_index:
 			selected_tabbed_log_index = clampi(new_value, 0, tabbed_logs_in_order.size())
 			_update_children_visibility()
+			tabs_changed.emit(self)
 
 func _ready():
 	tab_bar.tab_selected.connect(_on_tab_selected)
@@ -35,10 +36,10 @@ func _ready():
 	_update_children_visibility()
 
 func _create_default_log():
-	default_log = _create_log("default")
+	default_log = _create_log(DebugInfoManager.DEFAULT_LOG_KEY)
 	default_log.title = "Default"
 
-func get_default_log(ensure_is_on_gui: bool = false):
+func get_default_log(ensure_is_on_gui: bool = false) -> DebugInfoEditorLog:
 	if default_log == null:
 		_create_default_log()
 		if ensure_is_on_gui:
@@ -52,8 +53,12 @@ func _add_log_to_tabs(log: DebugInfoEditorLog):
 		log.updated.connect(_ensure_log_is_on_gui)
 		log_container.add_child(log)
 		tab_bar.add_tab(log.title)
-		_update_children_visibility()
-		tabs_changed.emit(self)
+		if auto_activate_new_tabs:
+			selected_tabbed_log_index = tabbed_logs_in_order.size() - 1
+		else:
+			_update_children_visibility()
+			tabs_changed.emit(self)
+			
 	
 func _ensure_log_is_on_gui(log: DebugInfoEditorLog):
 	if tabbed_logs_in_order.find(log) < 0:
