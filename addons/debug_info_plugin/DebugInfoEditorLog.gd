@@ -42,9 +42,10 @@ class LogFilter:
 			_update_toggle_button()
 
 	var active: bool = true:
-		set(value):
-			active = value
-			_update_toggle_button()
+		set(new_value):
+			if new_value != active:
+				active = new_value
+				_update_toggle_button()
 
 	var type: MessageType
 
@@ -65,7 +66,7 @@ class LogFilter:
 		
 	func _button_toggled(button_pressed: bool):
 		active = button_pressed
-		toggled.emit(active, type)
+		toggled.emit(type, active)
 	
 	func _update_toggle_button():
 		toggle_button.set_pressed_no_signal(active)
@@ -82,36 +83,34 @@ var track_all_timestamps := false # If true, all timestamp will be stored for re
 @onready var copy_button := %CopyButton as Button
 	
 @onready var collapse_button := %CollapseButton as Button
-var collapse: bool = false:
+@export var collapse: bool = false:
 	set(new_value):
-		collapse = new_value
-		if is_instance_valid(collapse_button):
-			collapse_button.set_pressed_no_signal(collapse)
+		if new_value != collapse:
+			collapse = new_value
+			_update_button_states()
+			_rebuild_log()
+			_notify_setting_changed()
 
-		
 var tool_button: Button # TODO: intro state for tool_button, make _update_function, call it from setter also
 	
 @onready var show_search_button := %ShowSearchButton as Button
-var search_box_visible: bool = true:
+@export var search_box_visible: bool = true:
 	set(new_value):
-		search_box_visible = new_value
-		if is_instance_valid(search_box):
-			search_box.visible = search_box_visible
-		if is_instance_valid(show_search_button):
-			show_search_button.set_pressed_no_signal(search_box_visible)
-			
+		if new_value != search_box_visible:
+			search_box_visible = new_value
+			_update_button_states()
+			_notify_setting_changed()
+
 @onready var search_box := %SearchBox as LineEdit
 
-@onready var is_loading_state := false
-@onready var save_state_timer := %SaveStateTimer as Timer
-
 @onready var timestamp_filter_button := %TimestampFilterButton as Button
-var timestamp_visible := true:
+@export var timestamp_visible := true:
 	set(new_value):
-		timestamp_visible = new_value
-		if is_instance_valid(timestamp_filter_button):
-			timestamp_filter_button.set_pressed_no_signal(timestamp_visible)
-
+		if new_value != timestamp_visible:
+			timestamp_visible = new_value
+			_update_button_states()
+			_rebuild_log()
+			_notify_setting_changed()
 
 @onready var externalize_button := %ExternalizeButton as Button
 var externalize_icon := preload("ExternalView.svg")
@@ -134,15 +133,11 @@ signal updated(log: DebugInfoEditorLog)
 
 signal title_changed(log: DebugInfoEditorLog)
 
-@export var settings_key: String:
-	set(new_value):
-		_save_state()
-		settings_key = new_value
-		_load_state()
+var is_loading_setting := false
+signal settings_changed(log: DebugInfoEditorLog)
+
 
 func _ready():
-	save_state_timer.timeout.connect(_save_state)
-	
 	search_box.text_changed.connect(_search_changed)
 	
 	clear_button.pressed.connect(_clear_request)
@@ -157,7 +152,7 @@ func _ready():
 	type_filter_map[MessageType.WARNING] = LogFilter.new(MessageType.WARNING, %WarningFilterButton)
 	type_filter_map[MessageType.VERBOSE] = LogFilter.new(MessageType.VERBOSE, %VerboseFilterButton)
 	for filter in type_filter_map.values():
-		filter.toggled.connect(_set_filter_active)
+		filter.toggled.connect(_on_filter_toggled)
 
 
 func _update_theme():
@@ -222,79 +217,61 @@ func _notification(what: int):
 	match what:
 		NOTIFICATION_ENTER_TREE:
 			_update_theme()
-			_load_state()
+			_update_button_states()
 		NOTIFICATION_READY:
 			_update_theme()
-			_load_state()
+			_update_button_states()
 		NOTIFICATION_THEME_CHANGED:
 			_update_theme()
 			_rebuild_log()
-		NOTIFICATION_PREDELETE:
-			_save_state()
 
 
 func _set_collapse(collapse: bool):
 	self.collapse = collapse
-	_start_state_save_timer()
-	_rebuild_log()
-	
 
 func _set_timestamp_visible(visible: bool):
 	self.timestamp_visible = visible
-	_start_state_save_timer()
-	_rebuild_log()
 
 func _request_external_change():
 	external_change_requested.emit(self, !external)
 
-func _start_state_save_timer():
-	if not is_loading_state:
-		save_state_timer.start()
-
-
-func _save_state():
-	if not is_node_ready() or (settings_key == null or settings_key.length() == 0):
-		return
-
-	var editor_path := EditorPaths.new()
-	var config := ConfigFile.new()
-	# Load and amend existing config if it exists.
-	config.load(editor_path.get_project_settings_dir().path_join("debug_info_editor_logs.cfg"))
-
-	var section := settings_key
+func _get_settings() -> Dictionary:
+	var settings := { }
 	for key in type_filter_map:
-		config.set_value(section, "log_filter_" + str(key), type_filter_map[key].active)
+		settings["log_filter_" + str(key)] = type_filter_map[key].active
+	settings["collapse"] = collapse
+	settings["show_search"] = search_box_visible
+	settings["show_timestamp"] = timestamp_visible
+	settings["track_all_timestamps"] = track_all_timestamps
+	return settings
 
-	config.set_value(section, "collapse", collapse)
-	config.set_value(section, "show_search", search_box_visible)
-	config.set_value(section, "show_timestamp", timestamp_visible)
-	config.set_value(section, "track_all_timestamps", track_all_timestamps)
+func _notify_setting_changed():
+	if not is_loading_setting:
+		settings_changed.emit(self)
 
-	config.save(editor_path.get_project_settings_dir().path_join("debug_info_editor_logs.cfg"))
-
-
-func _load_state():
-	if not is_node_ready():
-		return
-	
-	is_loading_state = true
-
-	var editor_path := EditorPaths.new()
-	var config := ConfigFile.new()
-	config.load(editor_path.get_project_settings_dir().path_join("debug_info_editor_logs.cfg"))
-
-	# Run the below code even if config.load returns an error, since we want the defaults to be set even if the file does not exist yet.
-	var section := settings_key
+func _load_settings(settings: Dictionary):
+	is_loading_setting = true
 	for key in type_filter_map:
-		type_filter_map[key].active = config.get_value(section, "log_filter_" + str(key), true) as bool
+		type_filter_map[key].active = settings.get("log_filter_" + str(key), true)
+	collapse = settings.get("collapse", false)
+	search_box_visible = settings.get("show_search", true)
+	timestamp_visible = settings.get("show_timestamp", true)
+	track_all_timestamps = settings.get("track_all_timestamps", false)
+	is_loading_setting = false
+	_update_button_states()
+	_notify_setting_changed()
 
-	collapse = config.get_value(section, "collapse", false)
-	search_box_visible = config.get_value(section, "show_search", true)
-	timestamp_visible = config.get_value(section, "show_timestamp", true)
-	track_all_timestamps = config.get_value(section, "track_all_timestamps", false)
-
-	is_loading_state = false
-
+func _update_button_states():
+	for key in type_filter_map:
+		type_filter_map[key].toggle_button.set_pressed_no_signal(type_filter_map[key].active)
+	if is_instance_valid(collapse_button):
+		collapse_button.set_pressed_no_signal(collapse)
+	if is_instance_valid(search_box):
+		search_box.visible = search_box_visible
+	if is_instance_valid(show_search_button):
+		show_search_button.set_pressed_no_signal(search_box_visible)
+	if timestamp_filter_button != null:
+		timestamp_filter_button.set_pressed_no_signal(timestamp_visible)
 
 func _clear_request():
 	log.clear()
@@ -455,18 +432,19 @@ func _add_log_line(message: LogMessage, replace_previous: bool = false, timestam
 	log.newline()
 	
 
-func _set_filter_active(active: bool, type: MessageType):
-	type_filter_map[type].active = active
-	_start_state_save_timer()
+func _on_filter_toggled(type: MessageType, active: bool):
 	_rebuild_log()
-
+	_notify_setting_changed()
+	
+func set_filter_active(type: MessageType, active: bool):
+	print("[set_filter_active] type = %s, active = %s" % [type, active])
+	if active != type_filter_map[type].active:
+		type_filter_map[type].active = active
 
 func _set_search_visible(visible):
 	search_box_visible = visible
 	if visible:
 		search_box.grab_focus()
-	_start_state_save_timer()
-
 
 func _search_changed(new_text):
 	_rebuild_log()
