@@ -1,7 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://dqquq3c61v32u"]
+[gd_scene load_steps=2 format=3 uid="uid://dqquq3c61v32u"]
 
 [ext_resource type="Script" path="res://addons/debug_info_plugin/DebugInfoEditorLogPanel.gd" id="1_hqqa3"]
-[ext_resource type="PackedScene" uid="uid://ca2gv3a66njm6" path="res://addons/debug_info_plugin/debug_info_editor_log.tscn" id="1_y6ja8"]
 
 [node name="DebugInfoEditorLogPanel" type="VBoxContainer"]
 anchors_preset = 15
@@ -16,26 +15,20 @@ always_show_tab_bar = true
 
 [node name="TabBar" type="TabBar" parent="."]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 tab_close_display_policy = 2
 drag_to_rearrange_enabled = true
 tabs_rearrange_group = -1557372877
-tab_count = 1
-tab_0/title = "Default"
 
 [node name="LogContainer" type="VBoxContainer" parent="."]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="DefaultLog" parent="LogContainer" instance=ExtResource("1_y6ja8")]
-unique_name_in_owner = true
-layout_mode = 2
-title = "Default"
-
 [node name="NoLogInfo" type="Label" parent="."]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 size_flags_vertical = 3
 text = "No docked logs to display."

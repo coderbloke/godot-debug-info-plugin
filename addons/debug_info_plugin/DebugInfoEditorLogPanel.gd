@@ -3,13 +3,15 @@ class_name DebugInfoEditorLogPanel extends VBoxContainer
 
 @onready var tab_bar := %TabBar as TabBar
 @onready var log_container := %LogContainer
-@onready var default_log := %DefaultLog as DebugInfoEditorLog
 @onready var no_log_info := %NoLogInfo as Label
 
+var default_log: DebugInfoEditorLog
 var logs: Dictionary = { }
 var tabbed_logs_in_order: Array[DebugInfoEditorLog] = []
 
-var external: bool = false
+signal tabs_changed(log: DebugInfoEditorLog)
+
+var external_windows: Array[DebugInfoEditorLogWindow] = []
 
 @export var always_show_tab_bar: bool = false:
 	set(new_value):
@@ -25,45 +27,60 @@ var selected_tabbed_log_index := 0:
 			_update_children_visibility()
 
 func _ready():
-	logs["default"] = default_log
-	tabbed_logs_in_order = [default_log]
 	tab_bar.tab_selected.connect(_on_tab_selected)
 	tab_bar.tab_close_pressed.connect(_on_tab_close_pressed)
 	tab_bar.active_tab_rearranged.connect(_on_active_tab_rearranged)
-	default_log.external_change_requested.connect(_on_external_change_requested)
-	default_log.updated.connect(_ensure_log_is_visible)
+	for log in logs.values():
+		_ensure_log_is_on_gui(log)
+	_update_children_visibility()
+
+func _create_default_log():
+	default_log = _create_log()
+	default_log.title = "Default"
+	logs["default"] = default_log
 
 func get_default_log():
+	if default_log == null:
+		_create_default_log()
 	return default_log
 	
 func _add_log_to_tabs(log: DebugInfoEditorLog):
+	log_container.add_child(log)
 	tab_bar.add_tab(log.title)
 	tabbed_logs_in_order.append(log)
+	log.title_changed.connect(_on_log_title_changed)
+	log.updated.connect(_ensure_log_is_on_gui)
+	_update_children_visibility()
+	tabs_changed.emit(self)
 	
-func _ensure_log_is_visible(log: DebugInfoEditorLog):
-	if logs.values().find(log) < 0 and not log.visible:
+func _ensure_log_is_on_gui(log: DebugInfoEditorLog):
+	if tabbed_logs_in_order.find(log) < 0:
 		_add_log_to_tabs(log)
 		_update_children_visibility()
 
-func get_log(key: String) -> DebugInfoEditorLog:
+func get_log(key: String, create_if_not_exists: bool = true) -> DebugInfoEditorLog:
 	var log: DebugInfoEditorLog
 	if logs.has(key):
 		log = logs[key]
 		if log == default_log:
-			_ensure_log_is_visible(default_log)
-	else:
+			_ensure_log_is_on_gui(default_log)
+	if log == null:
+		for window in external_windows:
+			log = window.log_panel.get_log(key, false)
+			if log != null: break
+	if log == null and create_if_not_exists:
 		log = _create_log()
 		log.title = key
 		logs[key] = log
 	return log
 	
 func _create_log() -> DebugInfoEditorLog:
-	var log := default_log.duplicate(DUPLICATE_USE_INSTANTIATION)
+#	var log := default_log.duplicate(DUPLICATE_USE_INSTANTIATION)
+	var log := preload("debug_info_editor_log.tscn").instantiate()
 	log.visible = false
-	log_container.add_child(log)
-	log.title_changed.connect(_on_log_title_changed)
-	_add_log_to_tabs(log)
-	_update_children_visibility()
+	log.external_change_requested.connect(_on_external_change_requested)
+	if is_node_ready():
+		_add_log_to_tabs(log)
 	return log
 
 func _update_children_visibility():
@@ -89,6 +106,7 @@ func _on_log_title_changed(log: DebugInfoEditorLog):
 	var tab_index := tabbed_logs_in_order.find(log)
 	if tab_index >= 0:
 		tab_bar.set_tab_title(tab_index, log.title)
+		tabs_changed.emit(self)
 
 func _on_tab_selected(tab: int):
 	selected_tabbed_log_index = tab
@@ -97,12 +115,11 @@ func _remove_log_from_tabs(log: DebugInfoEditorLog):
 	var tab_index = tabbed_logs_in_order.find(log)
 	if tab_index < 0:
 		return
+	log.title_changed.disconnect(_on_log_title_changed)
+	log.updated.disconnect(_ensure_log_is_on_gui)
 	tab_bar.remove_tab(tab_index)
 	tabbed_logs_in_order.remove_at(tab_index)
-	if log == default_log:
-		default_log.visible = false
-	else:
-		log_container.remove_child(log)
+	log_container.remove_child(log)
 	var tabbed_log_index_to_select: int 
 	if tab_index < selected_tabbed_log_index:
 		tabbed_log_index_to_select = selected_tabbed_log_index - 1
@@ -111,6 +128,7 @@ func _remove_log_from_tabs(log: DebugInfoEditorLog):
 	if tabbed_log_index_to_select >= tab_bar.tab_count:
 		tabbed_log_index_to_select = tab_bar.tab_count - 1
 	selected_tabbed_log_index = tabbed_log_index_to_select
+	tabs_changed.emit(self)
 
 func _on_tab_close_pressed(tab: int):
 	var closed_log := tabbed_logs_in_order[tab]
@@ -127,6 +145,7 @@ func _on_active_tab_rearranged(idx_to: int):
 	tabbed_logs_in_order.remove_at(selected_tabbed_log_index)
 	tabbed_logs_in_order.insert(idx_to, moved_log)
 	_update_tab_titles()
+	tabs_changed.emit(self)
 
 func _on_external_change_requested(log: DebugInfoEditorLog, external: bool):
 	if external:
@@ -134,16 +153,34 @@ func _on_external_change_requested(log: DebugInfoEditorLog, external: bool):
 	else:
 		_dock_log(log)
 		
-var window_variant := 0
-
-var external_windows = []
-
+static func _move_log_between_panels(from: DebugInfoEditorLogPanel, to: DebugInfoEditorLogPanel, log: DebugInfoEditorLog):
+	var key = from.logs.find_key(log)
+	from.logs.erase(key)
+	from._remove_log_from_tabs(log)
+	to.logs[key] = log
+	to._add_log_to_tabs(log)
+	
 func _externalize_log(log: DebugInfoEditorLog):
 	var window = preload("debug_info_editor_log_window.tscn").instantiate()
+	window.closed.connect(_on_window_closed)
+	external_windows.append(window)
 	add_child(window)
 	window.popup_centered(Vector2i(1280, 720))
-	external_windows.append(window)
+	_move_log_between_panels(self, window.log_panel, log)
 	log.external = true
+	_update_children_visibility()
+	
+func _on_window_closed(window: DebugInfoEditorLogWindow):
+	external_windows.erase(window)
+	
+func _get_window_of_log(log: DebugInfoEditorLog) -> DebugInfoEditorLogWindow:
+	for window in external_windows:
+		if window.log_panel.logs.find_key(log) != null:
+			return window
+	return null
 	
 func _dock_log(log: DebugInfoEditorLog):
-	log.external = false
+	var window = _get_window_of_log(log)
+	if window != null:
+		_move_log_between_panels(window.log_panel, self, log)
+		log.external = false

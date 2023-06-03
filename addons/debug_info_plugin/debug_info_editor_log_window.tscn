@@ -1,11 +1,24 @@
-[gd_scene load_steps=3 format=3 uid="uid://bcq15y2rv8uqk"]
+[gd_scene load_steps=4 format=3 uid="uid://bcq15y2rv8uqk"]
 
 [ext_resource type="PackedScene" uid="uid://dqquq3c61v32u" path="res://addons/debug_info_plugin/debug_info_editor_log_panel.tscn" id="1_5iur6"]
 [ext_resource type="Script" path="res://addons/debug_info_plugin/DebugInfoEditorLogWindow.gd" id="1_uo5m3"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r0uwp"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.25, 0.25, 0.25, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
 [node name="DebugInfoEditorLogWindow" type="Window"]
 size = Vector2i(1280, 720)
 script = ExtResource("1_uo5m3")
+dock_logs_before_close = true
 
 [node name="Background" type="PanelContainer" parent="."]
 unique_name_in_owner = true
@@ -14,6 +27,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_r0uwp")
 
 [node name="LogPanel" parent="Background" instance=ExtResource("1_5iur6")]
 unique_name_in_owner = true
