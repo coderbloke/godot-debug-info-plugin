@@ -116,6 +116,12 @@ signal updated(log: DebugInfoEditorLog)
 
 signal title_changed(log: DebugInfoEditorLog)
 
+@export var settings_key: String:
+	set(new_value):
+		_save_state()
+		settings_key = new_value
+		_load_state()
+
 func _ready():
 	save_state_timer.timeout.connect(_save_state)
 	
@@ -205,6 +211,8 @@ func _notification(what: int):
 		NOTIFICATION_THEME_CHANGED:
 			_update_theme()
 			_rebuild_log()
+		NOTIFICATION_PREDELETE:
+			_save_state()
 
 
 func _set_collapse(collapse: bool):
@@ -227,12 +235,15 @@ func _start_state_save_timer():
 
 
 func _save_state():
+	if not is_node_ready() or (settings_key == null or settings_key.length() == 0):
+		return
+
 	var editor_path := EditorPaths.new()
 	var config := ConfigFile.new()
 	# Load and amend existing config if it exists.
-	config.load(editor_path.get_project_settings_dir().path_join("editor_layout.cfg"))
+	config.load(editor_path.get_project_settings_dir().path_join("debug_info_editor_logs.cfg"))
 
-	const section := "debug_info_editor_log"
+	var section := settings_key
 	for key in type_filter_map:
 		config.set_value(section, "log_filter_" + str(key), type_filter_map[key].active)
 
@@ -241,7 +252,7 @@ func _save_state():
 	config.set_value(section, "show_timestamp", timestamp_visible)
 	config.set_value(section, "track_all_timestamps", track_all_timestamps)
 
-	config.save(editor_path.get_project_settings_dir().path_join("editor_layout.cfg"))
+	config.save(editor_path.get_project_settings_dir().path_join("debug_info_editor_logs.cfg"))
 
 
 func _load_state():
@@ -252,10 +263,10 @@ func _load_state():
 
 	var editor_path := EditorPaths.new()
 	var config := ConfigFile.new()
-	config.load(editor_path.get_project_settings_dir().path_join("editor_layout.cfg"))
+	config.load(editor_path.get_project_settings_dir().path_join("debug_info_editor_logs.cfg"))
 
 	# Run the below code even if config.load returns an error, since we want the defaults to be set even if the file does not exist yet.
-	const section := "debug_info_editor_log"
+	var section := settings_key
 	for key in type_filter_map:
 		type_filter_map[key].active = config.get_value(section, "log_filter_" + str(key), true) as bool
 
@@ -265,6 +276,7 @@ func _load_state():
 	search_box.visible = show_search
 	show_search_button.button_pressed = show_search
 	timestamp_visible = config.get_value(section, "show_timestamp", true)
+	timestamp_filter_button.button_pressed = timestamp_visible
 	track_all_timestamps = config.get_value(section, "track_all_timestamps", false)
 
 	is_loading_state = false

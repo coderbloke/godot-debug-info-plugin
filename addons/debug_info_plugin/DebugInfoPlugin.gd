@@ -15,7 +15,7 @@ func init_singleton():
 	if singleton != null:
 		singleton.info_panel = info_panel
 		singleton.log_panel = log_panel
-		singleton.log = log_panel.get_default_log()
+		singleton.log = log_panel.get_default_log(true)
 
 func _enter_tree():
 	add_autoload_singleton(AUTOLOAD_NAME, self.get_script().get_path().get_base_dir() + "/DebugInfoManager.gd")

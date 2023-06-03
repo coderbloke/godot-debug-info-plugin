@@ -35,13 +35,14 @@ func _ready():
 	_update_children_visibility()
 
 func _create_default_log():
-	default_log = _create_log()
+	default_log = _create_log("default")
 	default_log.title = "Default"
-	logs["default"] = default_log
 
-func get_default_log():
+func get_default_log(ensure_is_on_gui: bool = false):
 	if default_log == null:
 		_create_default_log()
+		if ensure_is_on_gui:
+			_ensure_log_is_on_gui(default_log)
 	return default_log
 	
 func _add_log_to_tabs(log: DebugInfoEditorLog):
@@ -62,23 +63,21 @@ func get_log(key: String, create_if_not_exists: bool = true) -> DebugInfoEditorL
 	var log: DebugInfoEditorLog
 	if logs.has(key):
 		log = logs[key]
-		if log == default_log:
-			_ensure_log_is_on_gui(default_log)
 	if log == null:
 		for window in external_windows:
 			log = window.log_panel.get_log(key, false)
 			if log != null: break
 	if log == null and create_if_not_exists:
-		log = _create_log()
-		log.title = key
-		logs[key] = log
+		log = _create_log(key)
 	return log
 	
-func _create_log() -> DebugInfoEditorLog:
-#	var log := default_log.duplicate(DUPLICATE_USE_INSTANTIATION)
+func _create_log(key: String) -> DebugInfoEditorLog:
 	var log := preload("debug_info_editor_log.tscn").instantiate()
 	log.visible = false
 	log.external_change_requested.connect(_on_external_change_requested)
+	log.settings_key = key
+	log.title = key
+	logs[key] = log
 	if is_node_ready():
 		_add_log_to_tabs(log)
 	return log
