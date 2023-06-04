@@ -22,8 +22,7 @@ You can also clear the lsot explcitily with `info.clear()`, or just reset its ti
 Working from tool script, but also from the app run in debug mode.
 Printed messages will always appear in the editor, not in the game.
 
-![debug-info-panel-demo](https://github.com/coderbloke/godot-debug-info-plugin/assets/75695649/c6ecb0f7-4273-4762-b579-2539585f1ae7)
-
+![Godot_v4 0 3-stable_win64_isGbU0doZE](https://github.com/coderbloke/godot-debug-info-plugin/assets/75695649/579ed8c4-fef8-4066-8c92-1d619843bed3)
 
 Possibilities
 --
