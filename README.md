@@ -5,9 +5,9 @@ A Godot plug-in to display debug info in separate panels in the editor.
 Yet simple and early, but already useful.<br>
 
 Component:
-- [DebugInfoPanel](DebugInfoPanel):
+- [DebugInfoPanel](#DebugInfoPanel):
   Mostly for cyclic debug messages, instead flooding the console with them.
-- [DebugInfoLog](DebugInfoLog):
+- [DebugInfoLog](#DebugInfoLog):
   If you run out-of-space or got lost in standard log
   
 The plug-in provides you with an autoload singleton, which you can access from anywhere in your code.<br>
