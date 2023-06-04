@@ -21,8 +21,8 @@ For feedback and idea/needs sharing:
 Driving forces currently are my needs during usage.
 You can change it with your feedback.
 
-DebugInfoPanel
---
+## DebugInfoPanel
+
 You can get a slot on the DebugInfoPanel from your code, and print rich text to it.
 (Panel open in the left-bottom dock by default.)
 
@@ -39,8 +39,8 @@ You can also clear the slot explcitily with `info.clear()`, or just reset its ti
 
 ![Godot_v4 0 3-stable_win64_isGbU0doZE](https://github.com/coderbloke/godot-debug-info-plugin/assets/75695649/579ed8c4-fef8-4066-8c92-1d619843bed3)
 
-DebugInfoLog
---
+## DebugInfoLog
+
 You can get a log in the DebugInfoLog panel, and print on it and filter it similarly as you are used to the standard log.
 In addition, it allows multiple logs, externalize the log to a separata window, display timetsamps, clear the log from script...
 For example:
@@ -56,7 +56,7 @@ Usage:
 - Print to the log using `print`, `print_rich`, `printerr`, `print_error`, `print_warning`, `print_verbose` and `print_raw`<br>
   They are working similarly then the [built-in print functions](https://docs.godotengine.org/en/stable/classes/class_@globalscope.html#class-globalscope-method-print),
   except that they cannot accept variable number of argument, only one string parameter.<br>
-  To default log: `Debuginfo.log.print(...)`, or to your custom log `additional_log.print(...)`
+  To default log: `DebugInfo.log.print(...)`, or to your custom log `additional_log.print(...)`
 - Clear log with `clear()`
 - Other features accesible on the GUI (see right side button). Settings of the logs are saved in the background using their `id`.
 
