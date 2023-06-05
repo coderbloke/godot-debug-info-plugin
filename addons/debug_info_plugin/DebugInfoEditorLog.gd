@@ -318,7 +318,8 @@ func _process_message(msg: String, timestamp: int, type: MessageType):
 		_add_log_line(message, false, 0)
 		messages.push_back(message)
 
-	type_filter_map[type].message_count += 1
+	var filter_type := type if type != MessageType.STD_RICH else MessageType.STD
+	type_filter_map[filter_type].message_count += 1
 	updated.emit(self)
 
 func add_message(msg: String, type: MessageType):
@@ -359,7 +360,8 @@ func _add_log_line(message: LogMessage, replace_previous: bool = false, timestam
 #		return
 
 	# Only add the message to the log if it passes the filters.
-	var filter_active := (type_filter_map[message.type] as LogFilter).active
+	var filter_type := message.type if message.type != MessageType.STD_RICH else MessageType.STD
+	var filter_active := (type_filter_map[filter_type] as LogFilter).active
 	var search_text := search_box.text
 	var search_match := search_text.is_empty() or message.text.findn(search_text) > -1
 
