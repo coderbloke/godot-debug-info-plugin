@@ -39,6 +39,7 @@ func get_log(key: String, title: String = "") -> DebugInfoLog:
 		logs[key] = log
 	if title.length() > 0:
 		log.set_title(title)
+	log.redirect_to_main = false
 	return log
 	
 func send_debugger_message(message: String, data: Array):
