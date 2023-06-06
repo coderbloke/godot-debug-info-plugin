@@ -3,6 +3,7 @@ class_name DebugInfoLog extends Object
 
 var parent: DebugInfoManager
 var key: String
+var redirect_to_main: bool = false
 
 func _init(parent: DebugInfoManager):
 	self.parent = parent
@@ -32,24 +33,41 @@ func set_title(title: String):
 
 func print(msg):
 	add_message(str(msg), DebugInfoEditorLog.MessageType.STD)
+	if redirect_to_main:
+		print(msg)
 
 func print_rich(msg):
 	add_message(str(msg), DebugInfoEditorLog.MessageType.STD_RICH)
+	if redirect_to_main:
+		print_rich(msg)
+	
+func print_colored(color_name: String, msg):
+	self.print_rich("[color=%s]%s[/color]" % [color_name, str(msg)])
 	
 func print_verbose(msg):
 	add_message(str(msg), DebugInfoEditorLog.MessageType.VERBOSE)
+	if redirect_to_main:
+		print_verbose(msg)
 
 func printerr(msg):
 	add_message(str(msg), DebugInfoEditorLog.MessageType.ERROR)
+	if redirect_to_main:
+		printerr(msg)
 
 func printraw(msg):
 	collected_raw_msg += msg
+	if redirect_to_main:
+		printraw(msg)
 
 func print_error(msg):
 	add_message(str(msg), DebugInfoEditorLog.MessageType.ERROR)
+	if redirect_to_main:
+		printerr(msg)
 
 func print_warning(msg):
 	add_message(str(msg), DebugInfoEditorLog.MessageType.WARNING)
+	if redirect_to_main:
+		print(msg)
 
 func print_call_stack():
 	var call_stack = get_stack()
