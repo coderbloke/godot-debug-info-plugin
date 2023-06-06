@@ -47,7 +47,7 @@ For example:
 - You have components in your app, which are only occasionally doing some background activity.<br>
   Usually you don't need their debug info, but once you need it it's good to have them accessible:<br>
   🡒 Leave the debug printing in your code to a separate log. When you need the info, switch to log, and enable to show the timestamps.
-- At certain event in your game you need lots of debug info for that one exact event,
+- At certain event in your game you need lots of debug info for that one exact event:<br>
   🡒 Print to separate log. Clear the log before printing. External log and put to a second screen.
 
 Usage:
@@ -57,8 +57,14 @@ Usage:
   They are working similarly then the [built-in print functions](https://docs.godotengine.org/en/stable/classes/class_@globalscope.html#class-globalscope-method-print),
   except that they cannot accept variable number of argument, only one string parameter.<br>
   To default log: `DebugInfo.log.print(...)`, or to your custom log `additional_log.print(...)`
+- There is a short-cut for printing colored rich text: `print_colored(color, msg)`<br>
+  Color is a BBCode named color or an HTML color in form of #RRGGBB. Cheat names from here: [BBCode Color List](https://absitomen.com/index.php?topic=331.0)<br>
+  I suggest you to use colors to help yourself. This function just saves you the boilerplate BBCode.
 - Clear log with `clear()`
-- Other features accesible on the GUI (see right side button). Settings of the logs are saved in the background using their `id`.
+- With the `log.redirect_to_main` flag, you can redirect the printing to the main editor log also. (Printing will done to custom log also.)
+  This is usefull, when there is a runtime error during your printing, and you want to see, where it happens between your hundreds of lines of printing.
+  Set `log.redirect_to_main = true` temporarily in such cases. The `get_log` function reset the flag back to `false`.
+- Other features accessible on the GUI (see right side button). Settings of the logs are saved in the background using their `id`.
 
 ![ArLG3mEm5S](https://github.com/coderbloke/godot-debug-info-plugin/assets/75695649/923ddeed-46e5-460f-afe9-e2f49ace4323)
 
