@@ -439,7 +439,6 @@ func _on_filter_toggled(type: MessageType, active: bool):
 	_notify_setting_changed()
 	
 func set_filter_active(type: MessageType, active: bool):
-	print("[set_filter_active] type = %s, active = %s" % [type, active])
 	if active != type_filter_map[type].active:
 		type_filter_map[type].active = active
 
