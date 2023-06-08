@@ -20,7 +20,8 @@ func _has_capture(prefix):
 func _capture(message, data, session_id):
 #	print("*** [_capture] session_id = " + str(session_id)
 #		+ ", message = " + str(message) + ", data = " + str(data))
-	var key = "[" + str(session_id) + "] " + data[0]
+	var session_id_prefix := "[" + str(session_id) + "] "
+	var key = session_id_prefix + data[0]
 	var processed := true
 	match message:
 		MESSAGE_PREFIX + ":" + Messages.CLEAR_SLOT:
@@ -32,7 +33,7 @@ func _capture(message, data, session_id):
 		MESSAGE_PREFIX + ":" + Messages.ADD_SLOT_LINE:
 			var panel_slot = info_panel.get_slot(key)
 			if panel_slot != null: panel_slot.add_line(data[1])
-		MESSAGE_PREFIX + ":" + Messages.CLEAR_SLOT:
+		MESSAGE_PREFIX + ":" + Messages.CLEAR_LOG:
 			var log = log_panel.get_log(key)
 			if log != null: log.clear()
 		MESSAGE_PREFIX + ":" + Messages.ADD_LOG_MESSAGE:
@@ -40,7 +41,7 @@ func _capture(message, data, session_id):
 			if log != null: log.add_message(data[1], data[2])
 		MESSAGE_PREFIX + ":" + Messages.SET_LOG_TITLE:
 			var log = log_panel.get_log(key)
-			if log != null: log.title = data[1]
+			if log != null: log.title = session_id_prefix + data[1]
 		_:
 			processed = false
 	return processed
