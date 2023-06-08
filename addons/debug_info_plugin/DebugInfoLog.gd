@@ -41,8 +41,8 @@ func print_rich(msg):
 	if redirect_to_main:
 		print_rich(msg)
 	
-func print_colored(color_name: String, msg):
-	self.print_rich("[color=%s]%s[/color]" % [color_name, str(msg)])
+func print_colored(color: Color, msg):
+	self.print_rich("[color=#%s]%s[/color]" % [color.to_html(false), str(msg)])
 	
 func print_verbose(msg):
 	add_message(str(msg), DebugInfoEditorLog.MessageType.VERBOSE)
